@@ -10,7 +10,7 @@
 [![Theme](https://img.shields.io/badge/Theme-NU%20Blue%20%26%20Gold-35408e.svg?style=flat-square)](#-national-university-identity--swiss-minimalist-ui)
 [![Design](https://img.shields.io/badge/Style-Swiss%20Minimalist-000000.svg?style=flat-square)](#-national-university-identity--swiss-minimalist-ui)
 
-**Official Web Application for National University Philippines**  
+**Concept Web Application for National University Philippines Lost and Found System**  
 *Reconnecting Bulldogs with what matters through a secure, high-integrity campus property management grid.*
 
 </div>
@@ -254,7 +254,7 @@ c:\Users\Kananyan\Downloads\NULSF-main\NULSF-main
 
 <div align="center">
 
-**National University Philippines &bull; Student Safety &amp; Security Office**  
+**National University Laguna**  
 *Built with ❤️ in pure Java Spring Boot for Bulldogs everywhere.*
 
 </div>
