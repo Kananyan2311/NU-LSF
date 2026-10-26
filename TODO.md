@@ -1,0 +1,9 @@
+- Move User.java to model package
+- Implement UserDetails in User model
+- Create UserDetailsServiceImpl
+- Update SecurityConfig to use UserDetailsService and set loginPage("/login")
+- Update AuthController to remove conflicting login POST mapping
+- Update AuthService to remove login method (handled by Spring Security)
+- Revamp login.html as Thymeleaf template without JS
+- Create data.sql to seed users
+- Update imports in dependent files
