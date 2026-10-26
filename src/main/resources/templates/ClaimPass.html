@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Official Handover Verification Pass &bull; NU LSF</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .pass-sheet {
+            max-width: 760px;
+            margin: 40px auto;
+            border: 3px solid #000000;
+            padding: 36px;
+            background: #ffffff;
+        }
+        .pass-header {
+            border-bottom: 2px solid #000000;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .code-box {
+            border: 2px dashed #000000;
+            padding: 16px;
+            text-align: center;
+            background: #fafafa;
+            margin: 24px 0;
+        }
+        .sig-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 2px solid #000000;
+        }
+        .sig-line {
+            border-top: 1px solid #000000;
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 700;
+            padding-top: 6px;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .pass-sheet {
+                margin: 0 auto;
+                border: 2px solid #000;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body style="background: #e5e5e5; padding: 20px 0;">
+
+<div class="no-print" style="max-width: 760px; margin: 0 auto 16px auto; display: flex; justify-content: space-between; align-items: center;">
+    <a th:href="@{/claims/my-claims}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+        &larr; Back to My Claims
+    </a>
+    <button onclick="window.print()" class="swiss-btn swiss-btn-primary swiss-btn-sm">
+        🖨️ Print Release Pass
+    </button>
+</div>
+
+<div class="pass-sheet">
+    <div class="pass-header">
+        <div>
+            <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.12em; color: var(--nu-blue); text-transform: uppercase;">
+                NATIONAL UNIVERSITY PHILIPPINES &bull; STUDENT SAFETY &amp; SECURITY
+            </div>
+            <h1 style="font-size: 26px; font-weight: 800; text-transform: uppercase; margin-top: 4px; letter-spacing: -0.02em;">
+                LOST PROPERTY RELEASE PASS
+            </h1>
+            <div style="font-size: 12px; color: #555;">Official Property Retrieval Authorization Slip</div>
+        </div>
+        <div style="text-align: right;">
+            <div class="brand-badge" style="display: inline-block;">NU-LSF</div>
+            <div style="font-size: 11px; margin-top: 4px; font-weight: bold;" th:text="'CLAIM #' + ${claim.claimId}">#0</div>
+        </div>
+    </div>
+
+    <!-- CODE BOX -->
+    <div class="code-box">
+        <span class="signal-badge signal-available" style="margin-bottom: 6px;">VERIFIED &amp; APPROVED</span>
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-top: 6px;">
+            OFFICIAL RETRIEVAL CODE:
+        </div>
+        <div style="font-size: 38px; font-weight: 800; letter-spacing: 0.15em; color: var(--nu-blue); margin: 6px 0;"
+             th:text="${claim.verificationCode}">
+            NU-C123456
+        </div>
+        <small style="color: #666;">Present this pass alongside your official School / Employee ID.</small>
+    </div>
+
+    <!-- PARTICIPANT & ITEM DETAILS MATRIX -->
+    <div style="border: 2px solid #000; margin-bottom: 24px;">
+        <div style="background: #000; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">
+            SECTION 01: CLAIMANT IDENTIFICATION
+        </div>
+        <div style="padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+            <div><strong>Claimant Name:</strong> <span th:text="${claim.claimer.fullName}">Name</span></div>
+            <div><strong>Email Address:</strong> <span th:text="${claim.claimer.email}">Email</span></div>
+            <div><strong>Student / Employee ID:</strong> <span th:text="${claim.claimer.studentId != null and !claim.claimer.studentId.empty ? claim.claimer.studentId : 'Verified on File'}">ID</span></div>
+            <div><strong>Contact Number:</strong> <span th:text="${claim.claimer.contactNumber}">Contact</span></div>
+        </div>
+
+        <div style="background: #000; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; border-top: 2px solid #000;">
+            SECTION 02: PROPERTY SPECIFICATION
+        </div>
+        <div style="padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+            <div><strong>Item Title:</strong> <span th:text="${claim.item.itemName}">Item</span></div>
+            <div><strong>Category:</strong> <span th:text="${claim.item.category}">Category</span></div>
+            <div><strong>Original Discovery Location:</strong> <span th:text="${claim.item.location}">Location</span></div>
+            <div><strong>Office Storage Bin:</strong> <span th:text="${claim.item.storageLocation != null ? claim.item.storageLocation : 'LSF Secure Vault'}">Bin</span></div>
+            <div style="grid-column: span 2;">
+                <strong>Verified Proof Details:</strong>
+                <p style="margin-top: 4px; color: #444;" th:text="${claim.proofDescription}">Proof notes</p>
+            </div>
+            <div style="grid-column: span 2; background: #fafafa; border: 1px solid #ddd; padding: 10px;">
+                <strong>Admin Clearance Remarks:</strong>
+                <span th:text="${claim.adminRemarks != null ? claim.adminRemarks : 'Ownership confirmed against item features.'}">Remarks</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIGNATURE RELEASE BOXES -->
+    <div class="sig-grid">
+        <div>
+            <p style="font-size: 11px; color: #666; line-height: 1.4;">
+                I hereby acknowledge receipt of the aforementioned personal property in satisfactory condition.
+            </p>
+            <div class="sig-line">
+                Claimant Signature over Printed Name / Date
+            </div>
+        </div>
+        <div>
+            <p style="font-size: 11px; color: #666; line-height: 1.4;">
+                Verified by NU Lost &amp; Found Officer on duty. Identity and pass code matched.
+            </p>
+            <div class="sig-line">
+                Authorized Security Officer Signature / Date
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 32px; font-size: 10px; color: #999; letter-spacing: 0.1em; text-transform: uppercase;">
+        NATIONAL UNIVERSITY PHILIPPINES &bull; OFFICIAL DOCUMENT &bull; NON-TRANSFERABLE
+    </div>
+</div>
+
+</body>
+</html>

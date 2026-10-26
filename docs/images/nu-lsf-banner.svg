@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="1200" height="480">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@700;800;900&amp;display=swap');
+      .heavy { font-family: 'Host Grotesk', -apple-system, BlinkMacSystemFont, Arial, sans-serif; font-weight: 800; }
+      .mono { font-family: 'Courier New', monospace; font-weight: 700; }
+    </style>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a3375" stroke-width="1" opacity="0.35"/>
+    </pattern>
+  </defs>
+
+  <!-- Background Ground (NU Navy Blue) -->
+  <rect width="1200" height="480" fill="#1b2359"/>
+  <rect width="1200" height="480" fill="url(#grid)"/>
+
+  <!-- Top Accent Rule in NU Gold -->
+  <rect x="0" y="0" width="1200" height="12" fill="#fcd116"/>
+
+  <!-- Left Architectural Index Rail Background -->
+  <rect x="0" y="12" width="280" height="468" fill="#141a45"/>
+  <line x1="280" y1="12" x2="280" y2="480" stroke="#fcd116" stroke-width="3"/>
+
+  <!-- Index Rail Content -->
+  <text x="32" y="56" fill="#fcd116" font-size="11" class="mono" letter-spacing="3">INDEX 00 / SYSTEM</text>
+  <text x="32" y="88" fill="#ffffff" font-size="20" class="heavy">NU-LSF</text>
+  <text x="32" y="110" fill="#a0a8e0" font-size="11" class="heavy">LOST &amp; FOUND PLATFORM</text>
+  
+  <line x1="32" y1="130" x2="248" y2="130" stroke="#2a3375" stroke-width="2"/>
+
+  <!-- Metric Badges in Rail -->
+  <g transform="translate(32, 150)">
+    <rect width="216" height="52" fill="#1b2359" stroke="#35408e" stroke-width="1.5"/>
+    <text x="14" y="24" fill="#fcd116" font-size="16" class="heavy">JAVA SPRING BOOT</text>
+    <text x="14" y="42" fill="#8892d6" font-size="10" class="mono">PURE MVC &bull; THYMELEAF</text>
+  </g>
+
+  <g transform="translate(32, 214)">
+    <rect width="216" height="52" fill="#1b2359" stroke="#35408e" stroke-width="1.5"/>
+    <text x="14" y="24" fill="#ffffff" font-size="15" class="heavy">SWISS MINIMALIST</text>
+    <text x="14" y="42" fill="#8892d6" font-size="10" class="mono">12-COL GRID &bull; 0 RADIUS</text>
+  </g>
+
+  <g transform="translate(32, 278)">
+    <rect width="216" height="52" fill="#1b2359" stroke="#35408e" stroke-width="1.5"/>
+    <text x="14" y="24" fill="#fcd116" font-size="15" class="heavy">10+ ENTERPRISE FEAT.</text>
+    <text x="14" y="42" fill="#8892d6" font-size="10" class="mono">DUAL USER/ADMIN SIGNUP</text>
+  </g>
+
+  <g transform="translate(32, 342)">
+    <rect width="216" height="84" fill="#0e1333" stroke="#fcd116" stroke-width="2"/>
+    <text x="14" y="26" fill="#fcd116" font-size="11" class="mono">VERIFICATION PASS</text>
+    <text x="14" y="52" fill="#ffffff" font-size="22" class="heavy" letter-spacing="4">NU-C8F21A</text>
+    <text x="14" y="72" fill="#4ade80" font-size="10" class="mono">&#x2713; OFFICIAL RETRIEVAL CODE</text>
+  </g>
+
+  <!-- Main Hero Canvas (Columns 4-12) -->
+  <!-- Top Tag -->
+  <g transform="translate(320, 48)">
+    <rect width="320" height="26" fill="#fcd116"/>
+    <text x="12" y="18" fill="#000000" font-size="11" class="heavy" letter-spacing="2">NATIONAL UNIVERSITY PHILIPPINES</text>
+  </g>
+
+  <!-- Big Swiss Display Heading -->
+  <text x="320" y="126" fill="#ffffff" font-size="52" class="heavy" letter-spacing="-1">RECONNECTING BULLDOGS</text>
+  <text x="320" y="178" fill="#fcd116" font-size="52" class="heavy" letter-spacing="-1">WITH WHAT MATTERS.</text>
+
+  <text x="320" y="214" fill="#cbd5e1" font-size="15" font-family="'Host Grotesk', Arial, sans-serif">
+    Official Lost &amp; Found Central Management System &bull; Java Spring Boot &bull; Two-Way Messaging &bull; Audit Trail
+  </text>
+
+  <line x1="320" y1="234" x2="1160" y2="234" stroke="#fcd116" stroke-width="2"/>
+
+  <!-- 3 Feature Highlight Cards in Swiss Style -->
+  <g transform="translate(320, 254)">
+    <rect width="260" height="180" fill="#ffffff"/>
+    <rect width="260" height="8" fill="#35408e"/>
+    <text x="18" y="36" fill="#c90000" font-size="11" class="mono">FEATURE 01</text>
+    <text x="18" y="60" fill="#000000" font-size="17" class="heavy">DUAL SIGNUP</text>
+    <text x="18" y="80" fill="#444444" font-size="11" class="heavy">STUDENTS &amp; ADMIN STAFF</text>
+    <text x="18" y="106" fill="#666666" font-size="12" font-family="Arial, sans-serif">
+      Full self-service registration with security clearance verification passcode for office administrators.
+    </text>
+    <rect x="18" y="146" width="130" height="22" fill="#35408e"/>
+    <text x="26" y="161" fill="#fcd116" font-size="9" class="mono">SECURE ACCESS &rarr;</text>
+  </g>
+
+  <g transform="translate(605, 254)">
+    <rect width="260" height="180" fill="#ffffff"/>
+    <rect width="260" height="8" fill="#fcd116"/>
+    <text x="18" y="36" fill="#c90000" font-size="11" class="mono">FEATURE 02</text>
+    <text x="18" y="60" fill="#000000" font-size="17" class="heavy">MESSAGING CENTER</text>
+    <text x="18" y="80" fill="#444444" font-size="11" class="heavy">USER &harr; ADMIN THREADS</text>
+    <text x="18" y="106" fill="#666666" font-size="12" font-family="Arial, sans-serif">
+      Item-referenced live conversations, message counters, notification badges, and direct student inquiries.
+    </text>
+    <rect x="18" y="146" width="130" height="22" fill="#000000"/>
+    <text x="26" y="161" fill="#ffffff" font-size="9" class="mono">TWO-WAY CHAT &rarr;</text>
+  </g>
+
+  <g transform="translate(890, 254)">
+    <rect width="260" height="180" fill="#ffffff"/>
+    <rect width="260" height="8" fill="#0b7816"/>
+    <text x="18" y="36" fill="#c90000" font-size="11" class="mono">FEATURE 03</text>
+    <text x="18" y="60" fill="#000000" font-size="17" class="heavy">SMART MATCH &amp; PASS</text>
+    <text x="18" y="80" fill="#444444" font-size="11" class="heavy">AI ALGO &amp; HANDOVER SLIP</text>
+    <text x="18" y="106" fill="#666666" font-size="12" font-family="Arial, sans-serif">
+      Instant correlation of lost vs found items + printable official release slips with verification barcode.
+    </text>
+    <rect x="18" y="146" width="130" height="22" fill="#0b7816"/>
+    <text x="26" y="161" fill="#ffffff" font-size="9" class="mono">RETRIEVAL CODE &rarr;</text>
+  </g>
+
+  <!-- Bottom Accent Line -->
+  <line x1="0" y1="477" x2="1200" y2="477" stroke="#fcd116" stroke-width="6"/>
+</svg>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+<div th:fragment="navbar">
+    <!-- TOP NU STATUS BAR -->
+    <div class="nu-top-bar">
+        <div>
+            <span>NATIONAL UNIVERSITY PHILIPPINES &bull; LAGUNA &amp; MANILA CAMPUS</span>
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <span th:if="${currentUser != null}">
+                LOGGED IN AS: <strong th:text="${currentUser.fullName}">USER</strong>
+                <span class="badge bg-warning text-dark ms-1" th:text="${currentUser.role}">USER</span>
+            </span>
+            <span th:if="${currentUser == null}">
+                <a th:href="@{/auth/login}">PORTAL LOGIN</a>
+            </span>
+        </div>
+    </div>
+
+    <!-- MAIN SWISS MINIMALIST NAVBAR -->
+    <header class="swiss-nav">
+        <a th:href="@{/}" class="swiss-brand">
+            <div class="brand-badge">NU</div>
+            <div>
+                <div class="brand-title">LOST &amp; FOUND</div>
+                <div class="brand-sub">National University Philippines</div>
+            </div>
+        </a>
+
+        <nav class="d-flex align-items-center flex-wrap">
+            <ul class="swiss-nav-menu">
+                <li class="swiss-nav-item">
+                    <a th:href="@{/catalog}" class="swiss-nav-link">
+                        Browse Catalog
+                    </a>
+                </li>
+                <li class="swiss-nav-item">
+                    <a th:href="@{/report}" class="swiss-nav-link">
+                        File Report
+                    </a>
+                </li>
+                <li class="swiss-nav-item" th:if="${currentUser != null}">
+                    <a th:href="@{/claims/my-claims}" class="swiss-nav-link">
+                        My Claims
+                    </a>
+                </li>
+                <li class="swiss-nav-item" th:if="${currentUser != null and !currentUser.admin}">
+                    <a th:href="@{/messages}" class="swiss-nav-link">
+                        Messages
+                        <span th:if="${unreadMessages != null and unreadMessages > 0}" 
+                              class="badge bg-danger ms-1" th:text="${unreadMessages}"></span>
+                    </a>
+                </li>
+                <li class="swiss-nav-item" th:if="${currentUser != null and currentUser.admin}">
+                    <a th:href="@{/admin/dashboard}" class="swiss-nav-link" style="color: var(--nu-blue); font-weight: 800;">
+                        ★ Admin Portal
+                    </a>
+                </li>
+                <li class="swiss-nav-item" th:if="${currentUser != null and currentUser.admin}">
+                    <a th:href="@{/admin/messages}" class="swiss-nav-link">
+                        Inbox
+                        <span th:if="${unreadMessages != null and unreadMessages > 0}" 
+                              class="badge bg-danger ms-1" th:text="${unreadMessages}"></span>
+                    </a>
+                </li>
+                <li class="swiss-nav-item" th:if="${currentUser != null}">
+                    <a th:href="@{/notifications}" class="swiss-nav-link">
+                        Alerts
+                        <span th:if="${unreadNotifications != null and unreadNotifications > 0}" 
+                              class="badge bg-warning text-dark ms-1" th:text="${unreadNotifications}"></span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="swiss-nav-actions" th:if="${currentUser == null}">
+                <a th:href="@{/auth/login}" class="swiss-btn swiss-btn-primary swiss-btn-sm">
+                    Sign In / Register
+                </a>
+            </div>
+
+            <div class="swiss-nav-actions" th:if="${currentUser != null}">
+                <a th:href="@{/profile}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+                    Profile
+                </a>
+                <form th:action="@{/auth/logout}" method="post" style="display:inline; margin:0;">
+                    <button type="submit" class="swiss-btn swiss-btn-dark swiss-btn-sm">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </header>
+</div>
+
+<div th:fragment="footer">
+    <footer class="swiss-footer">
+        <div class="footer-grid">
+            <div class="footer-col-6">
+                <div class="footer-title">National University &bull; Lost &amp; Found System (NU-LSF)</div>
+                <p style="color: #666; max-width: 480px; font-size: 13px;">
+                    Official centralized lost and found repository for National University Philippines. 
+                    Built on high-contrast Swiss Minimalist design standards and enterprise Java Spring Boot backend. 
+                    Reconnecting Bulldogs with their missing personal belongings.
+                </p>
+                <div style="margin-top: 14px;">
+                    <span class="signal-badge signal-gold">CAMPUS SECURITY &amp; DISCIPLINE OFFICE</span>
+                </div>
+            </div>
+            <div class="footer-col-3">
+                <div class="footer-title">Navigation Rail</div>
+                <ul class="footer-links">
+                    <li><a th:href="@{/catalog}">Public Inventory Catalog</a></li>
+                    <li><a th:href="@{/report(type='LOST')}">Report Missing Item</a></li>
+                    <li><a th:href="@{/report(type='FOUND')}">Turn in Discovered Item</a></li>
+                    <li><a th:href="@{/claims/my-claims}">Track Filed Claims</a></li>
+                </ul>
+            </div>
+            <div class="footer-col-3">
+                <div class="footer-title">Assistance &amp; Admin</div>
+                <ul class="footer-links">
+                    <li><a th:href="@{/messages}">Contact LSF Office</a></li>
+                    <li><a th:href="@{/admin/dashboard}">Administrator Portal</a></li>
+                    <li><a th:href="@{/auth/login}">Staff / Student Access</a></li>
+                    <li><span>Office: Ground Floor, Main Bldg</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 National University Philippines. All Rights Reserved.</div>
+            <div>SWISS MINIMALIST &bull; JAVA SPRING BOOT &bull; HOST GROTESK</div>
+        </div>
+    </footer>
+</div>
+
+</body>
+</html>

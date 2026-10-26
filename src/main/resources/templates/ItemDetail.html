@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${item.itemName} + ' &bull; Item Detail | NU-LSF'">Item Detail &bull; NU-LSF</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .detail-img-box {
+            width: 100%;
+            height: 380px;
+            background: #f0f0f0;
+            border: var(--dp-border-rule) solid var(--dp-color-ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .detail-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        .action-box {
+            border: var(--dp-border-rule) solid var(--dp-color-ink);
+            padding: 24px;
+            background: #ffffff;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 900px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <div class="grid-12">
+        <!-- 3-COLUMN INDEX RAIL (METADATA) -->
+        <aside class="index-rail">
+            <span class="index-num" th:text="'INDEX 03 / ITEM #' + ${item.itemId}">INDEX 03 / ITEM</span>
+            <h1 class="index-title" th:text="${item.itemName}">ITEM NAME</h1>
+            
+            <div style="margin-bottom: 16px;">
+                <span class="signal-badge"
+                      th:classappend="${item.status == 'PENDING_CLAIM' ? 'signal-lost' : 
+                                       (item.status == 'AVAILABLE' ? 'signal-available' : 
+                                       (item.status == 'PENDING_SURRENDER' ? 'signal-pending' : 'signal-claimed'))}"
+                      th:text="${item.displayStatus}">
+                    STATUS
+                </span>
+            </div>
+
+            <hr class="rule-2px" style="margin: 20px 0;">
+
+            <div style="font-size: 13px; line-height: 1.8; color: #444;">
+                <div><strong>Category:</strong> <span th:text="${item.category}">Category</span></div>
+                <div><strong>Color:</strong> <span th:text="${item.color != null and !item.color.empty ? item.color : 'Unspecified'}">Color</span></div>
+                <div><strong>Campus Location:</strong> <span th:text="${item.location}">Location</span></div>
+                <div><strong>Date Logged:</strong> <span th:text="${item.dateReported}">Date</span></div>
+                <div><strong>Reported By:</strong> <span th:text="${item.postedBy}">Poster</span></div>
+                <div th:if="${item.storageLocation != null}">
+                    <strong>Office Storage:</strong> <span th:text="${item.storageLocation}">Storage Bin</span>
+                </div>
+            </div>
+
+            <hr class="rule-2px" style="margin: 20px 0;">
+
+            <a th:href="@{/catalog}" class="swiss-btn swiss-btn-outline swiss-btn-sm" style="width: 100%;">
+                &larr; Back to Catalog
+            </a>
+        </aside>
+
+        <!-- 9-COLUMN MAIN CONTENT MATRIX -->
+        <div class="content-matrix">
+            <div th:if="${alertSuccess}" class="swiss-alert swiss-alert-success">
+                <span th:text="${alertSuccess}">Action completed!</span>
+            </div>
+
+            <div class="detail-grid">
+                <!-- PHOTO VIEWER -->
+                <div class="detail-img-box">
+                    <img th:if="${item.imagePath != null}" th:src="${item.imagePath}" alt="Item Photograph">
+                    <div th:if="${item.imagePath == null}" style="text-align: center; color: #888;">
+                        <div style="font-size: 48px;">📦</div>
+                        <div style="font-weight: 700; font-size: 13px; text-transform: uppercase;">No Physical Photo Uploaded</div>
+                    </div>
+                </div>
+
+                <!-- DESCRIPTION & STATUS OVERVIEW -->
+                <div>
+                    <span class="swiss-label">ITEM PROFILE &amp; DESCRIPTION</span>
+                    <h2 style="font-size: 28px; font-weight: 800; text-transform: uppercase; margin-bottom: 16px; line-height: 1.1;"
+                        th:text="${item.itemName}">
+                        Item Name
+                    </h2>
+
+                    <div style="background: #fafafa; border: 1px solid #ddd; padding: 18px; margin-bottom: 20px;">
+                        <p style="font-size: 14px; line-height: 1.6; color: #333;" 
+                           th:text="${item.description != null and !item.description.empty ? item.description : 'No comprehensive description recorded.'}">
+                            Description text
+                        </p>
+                    </div>
+
+                    <div th:if="${item.resolutionNotes != null and !item.resolutionNotes.empty}" 
+                         style="background: #fffbe6; border: 1px solid #d4a017; padding: 14px; margin-bottom: 20px; font-size: 13px;">
+                        <strong>OFFICE RESOLUTION NOTES:</strong>
+                        <p th:text="${item.resolutionNotes}" style="margin-top: 4px;"></p>
+                    </div>
+
+                    <!-- USER ACTION TRIGGER: FILE CLAIM OR INQUIRE -->
+                    <div th:if="${item.status != 'CLAIMED'}">
+                        <div th:if="${currentUser != null}">
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <a href="#claimSection" class="swiss-btn swiss-btn-primary swiss-btn-lg">
+                                    Claim This Item &rarr;
+                                </a>
+                                <a href="#messageSection" class="swiss-btn swiss-btn-dark swiss-btn-lg">
+                                    Message LSF Admin
+                                </a>
+                            </div>
+                        </div>
+                        <div th:if="${currentUser == null}">
+                            <div class="swiss-alert swiss-alert-info">
+                                <div>
+                                    <strong>Want to claim or inquire about this item?</strong>
+                                    <div style="margin-top: 8px;">
+                                        <a th:href="@{/auth/login}" class="swiss-btn swiss-btn-primary swiss-btn-sm">
+                                            Sign In to File Claim
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${item.status == 'CLAIMED'}" class="swiss-alert swiss-alert-success">
+                        <strong>This property has been officially claimed and released to its verified owner.</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SMART MATCH SUGGESTIONS (FEATURE 7) -->
+            <div th:if="${smartMatches != null and !smartMatches.empty}" style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: var(--dp-border-rule) solid var(--nu-blue); padding-bottom: 6px;">
+                    <div>
+                        <span class="signal-badge signal-gold">AUTOMATED MATCH ENGINE</span>
+                        <h3 style="font-size: 18px; font-weight: 800; text-transform: uppercase; margin-top: 4px;">
+                            Potential Correlated Items Detected
+                        </h3>
+                    </div>
+                    <span style="font-size: 12px; color: #555;">Calculated based on category, keywords, color, and campus location.</span>
+                </div>
+
+                <div class="ruled-matrix">
+                    <div class="ruled-cell" th:each="m : ${smartMatches}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="signal-badge signal-gold" th:text="${m.score} + '% MATCH'">MATCH</span>
+                            <span class="signal-badge" 
+                                  th:classappend="${m.item.status == 'PENDING_CLAIM' ? 'signal-lost' : 'signal-available'}"
+                                  th:text="${m.item.status == 'PENDING_CLAIM' ? 'LOST' : 'FOUND'}">TYPE</span>
+                        </div>
+                        <a th:href="@{'/items/' + ${m.item.itemId}}" class="cell-title" th:text="${m.item.itemName}">Matched Item</a>
+                        <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
+                            <ul style="padding-left: 18px;">
+                                <li th:each="r : ${m.reasons}" th:text="${r}">Reason</li>
+                            </ul>
+                        </div>
+                        <a th:href="@{'/items/' + ${m.item.itemId}}" class="swiss-btn swiss-btn-outline swiss-btn-sm" style="margin-top: auto;">
+                            Inspect Correlated Item &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLAIM SUBMISSION FORM (FEATURE 4) -->
+            <div id="claimSection" class="action-box" th:if="${currentUser != null and item.status != 'CLAIMED'}">
+                <span class="signal-badge signal-lost" style="margin-bottom: 8px;">VERIFICATION REQUIREMENT</span>
+                <h3 style="font-size: 20px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                    File Ownership Claim
+                </h3>
+                <p style="font-size: 13px; color: #555; margin-bottom: 16px;">
+                    To protect campus property from unauthorized release, specify unique identifying details only the true owner would know (e.g. stickers, phone lock screen picture, inside contents, serial number, scratches, receipt).
+                </p>
+
+                <form th:action="@{/claims/submit}" method="post">
+                    <input type="hidden" name="itemId" th:value="${item.itemId}">
+                    <div style="margin-bottom: 16px;">
+                        <label class="swiss-label">Proof Description &amp; Identifying Marks *</label>
+                        <textarea name="proofDescription" class="swiss-textarea" rows="4" 
+                                  placeholder="Describe exact identifying features: e.g. Phone wallpaper, driver license name inside wallet, serial number, specific keychains attached..." required></textarea>
+                    </div>
+                    <button type="submit" class="swiss-btn swiss-btn-primary swiss-btn-lg">
+                        Submit Official Claim Request &rarr;
+                    </button>
+                </form>
+            </div>
+
+            <!-- DIRECT MESSAGE TO ADMIN (FEATURE 2) -->
+            <div id="messageSection" class="action-box" th:if="${currentUser != null}">
+                <span class="signal-badge signal-gold" style="margin-bottom: 8px;">TWO-WAY COMMUNICATION</span>
+                <h3 style="font-size: 20px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                    Message LSF Administrator
+                </h3>
+                <p style="font-size: 13px; color: #555; margin-bottom: 16px;">
+                    Send an inquiry directly to the Lost &amp; Found Office staff regarding this property.
+                </p>
+
+                <form th:action="@{/messages/start}" method="post">
+                    <input type="hidden" name="itemId" th:value="${item.itemId}">
+                    <input type="hidden" name="subject" th:value="'Inquiry: ' + ${item.itemName} + ' (Item #' + ${item.itemId} + ')'">
+                    <div style="margin-bottom: 16px;">
+                        <label class="swiss-label">Your Message to Admin</label>
+                        <textarea name="messageText" class="swiss-textarea" rows="3" 
+                                  placeholder="e.g. Hello, I believe this is my calculator from Room 304. Can I come pick it up tomorrow afternoon?" required></textarea>
+                    </div>
+                    <button type="submit" class="swiss-btn swiss-btn-dark swiss-btn-lg">
+                        Send Message to LSF Office &rarr;
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+</body>
+</html>

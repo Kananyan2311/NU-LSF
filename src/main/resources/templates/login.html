@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Authentication &bull; NU Lost &amp; Found</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .auth-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-top: var(--dp-border-rule) solid var(--dp-color-ink);
+            border-left: var(--dp-border-rule) solid var(--dp-color-ink);
+        }
+        .auth-cell {
+            border-right: var(--dp-border-rule) solid var(--dp-color-ink);
+            border-bottom: var(--dp-border-rule) solid var(--dp-color-ink);
+            padding: 32px;
+            background: #ffffff;
+        }
+        .auth-cell.active-panel {
+            background: #fafafa;
+        }
+        .auth-tab-bar {
+            display: flex;
+            border-bottom: var(--dp-border-rule) solid var(--dp-color-ink);
+            margin-bottom: 24px;
+        }
+        .auth-tab-btn {
+            padding: 10px 20px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            color: #555;
+            border-right: 1px solid #ccc;
+            background: #f0f0f0;
+        }
+        .auth-tab-btn.active {
+            background: #000000;
+            color: #ffffff;
+        }
+        @media (max-width: 900px) {
+            .auth-matrix {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <div class="grid-12">
+        <!-- 3-COLUMN INDEX RAIL -->
+        <aside class="index-rail">
+            <span class="index-num">INDEX 01 / SECURITY</span>
+            <h1 class="index-title">AUTHENTICATION PORTAL</h1>
+            <p class="index-desc">
+                Access the official National University Philippines Lost &amp; Found Registry. 
+                Dual role sign-in and account registration for students, faculty, and authorized office administrators.
+            </p>
+            <hr class="rule-2px" style="margin: 20px 0;">
+            <div style="font-size: 12px; line-height: 1.5; color: #444;">
+                <p><strong>QUICK DEMO CREDENTIALS:</strong></p>
+                <div style="background: #ffffff; border: 1px solid #ccc; padding: 10px; margin-top: 8px;">
+                    <div><strong>Admin:</strong> admin@national-u.edu.ph</div>
+                    <div><strong>Password:</strong> admin123</div>
+                    <hr style="margin: 6px 0;">
+                    <div><strong>Student:</strong> student@students.nu-laguna.edu.ph</div>
+                    <div><strong>Password:</strong> student123</div>
+                </div>
+                <div style="margin-top: 14px; font-size: 11px; color: #666;">
+                    * Admin registration requires security key: <code style="background:#eee; padding:2px 4px; font-weight:bold;">NU-ADMIN-2026</code>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 9-COLUMN MAIN CONTENT MATRIX -->
+        <div class="content-matrix">
+            <div th:if="${error}" class="swiss-alert swiss-alert-danger">
+                <span th:text="${error}">Invalid credentials.</span>
+            </div>
+            <div th:if="${logoutMessage}" class="swiss-alert swiss-alert-info">
+                <span th:text="${logoutMessage}">You have logged out.</span>
+            </div>
+            <div th:if="${success}" class="swiss-alert swiss-alert-success">
+                <span th:text="${success}">Success message.</span>
+            </div>
+            <div th:if="${registerError}" class="swiss-alert swiss-alert-danger">
+                <span th:text="${registerError}">Registration error.</span>
+            </div>
+
+            <div class="auth-matrix">
+                <!-- SIGN IN FORM (LEFT CELL) -->
+                <div class="auth-cell">
+                    <span class="signal-badge signal-gold" style="margin-bottom: 12px;">EXISTING MEMBERS</span>
+                    <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                        Sign In
+                    </h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 24px;">
+                        Enter your registered NU school or staff email to continue.
+                    </p>
+
+                    <form th:action="@{/auth/login}" method="post">
+                        <div style="margin-bottom: 16px;">
+                            <label class="swiss-label">Email or Username</label>
+                            <input type="text" name="username" class="swiss-input" 
+                                   placeholder="e.g. user@national-u.edu.ph" required>
+                        </div>
+                        <div style="margin-bottom: 20px;">
+                            <label class="swiss-label">Password</label>
+                            <input type="password" name="password" class="swiss-input" required>
+                        </div>
+                        <button type="submit" class="swiss-btn swiss-btn-primary swiss-btn-lg" style="width: 100%;">
+                            Authorize &amp; Sign In &rarr;
+                        </button>
+                    </form>
+                </div>
+
+                <!-- SIGN UP FORM (RIGHT CELL) - DUAL REGISTRATION -->
+                <div class="auth-cell active-panel">
+                    <span class="signal-badge signal-lost" style="margin-bottom: 12px;">NEW ENROLLMENT</span>
+                    <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                        Register Account
+                    </h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 16px;">
+                        Select role to register: Student/Faculty or Security Admin.
+                    </p>
+
+                    <form th:action="@{/auth/register}" method="post">
+                        <div style="margin-bottom: 16px;">
+                            <label class="swiss-label">Select Account Role</label>
+                            <select name="role" id="roleSelector" class="swiss-select" onchange="toggleAdminKey(this.value)">
+                                <option value="USER" th:selected="${prevRole != 'ADMIN'}">Student / Faculty User</option>
+                                <option value="ADMIN" th:selected="${prevRole == 'ADMIN'}">LSF Office Administrator (Staff)</option>
+                            </select>
+                        </div>
+
+                        <div id="adminKeyRow" style="display: none; margin-bottom: 16px; background: #fff5e6; border: 1px solid #d4a017; padding: 12px;">
+                            <label class="swiss-label" style="color: #995500;">NU Admin Security Clearance Code *</label>
+                            <input type="password" name="adminKey" class="swiss-input" placeholder="Enter clearance code (e.g. NU-ADMIN-2026)">
+                            <small style="color: #884400; font-size: 11px;">Default verification code is: <strong>NU-ADMIN-2026</strong></small>
+                        </div>
+
+                        <div style="margin-bottom: 14px;">
+                            <label class="swiss-label">Full Name</label>
+                            <input type="text" name="fullName" class="swiss-input" 
+                                   th:value="${prevFullName}" placeholder="e.g. Juan A. Dela Cruz" required>
+                        </div>
+
+                        <div style="margin-bottom: 14px;">
+                            <label class="swiss-label">Email Address</label>
+                            <input type="email" name="email" class="swiss-input" 
+                                   th:value="${prevEmail}" placeholder="e.g. jdelacruz@students.nu-laguna.edu.ph" required>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                            <div>
+                                <label class="swiss-label">Student / Employee ID</label>
+                                <input type="text" name="studentId" class="swiss-input" 
+                                       th:value="${prevStudentId}" placeholder="e.g. 2024-102941">
+                            </div>
+                            <div>
+                                <label class="swiss-label">Contact Number</label>
+                                <input type="text" name="contactNumber" class="swiss-input" 
+                                       th:value="${prevContact}" placeholder="e.g. 0917-000-0000">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 14px;">
+                            <label class="swiss-label">Department / College</label>
+                            <input type="text" name="department" class="swiss-input" 
+                                   th:value="${prevDepartment}" placeholder="e.g. CCIT, CBA, Security, Student Affairs">
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label class="swiss-label">Create Password (Min 6 Characters)</label>
+                            <input type="password" name="password" class="swiss-input" required minlength="6">
+                        </div>
+
+                        <button type="submit" class="swiss-btn swiss-btn-gold swiss-btn-lg" style="width: 100%;">
+                            Create Registered Account &rarr;
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+<script>
+    function toggleAdminKey(role) {
+        var row = document.getElementById('adminKeyRow');
+        if (role === 'ADMIN') {
+            row.style.display = 'block';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    // Check initial state
+    window.addEventListener('DOMContentLoaded', function() {
+        var sel = document.getElementById('roleSelector');
+        if (sel) toggleAdminKey(sel.value);
+    });
+</script>
+
+</body>
+</html>

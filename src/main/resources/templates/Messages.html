@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Messaging Center &bull; NU Lost &amp; Found</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .thread-item {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            display: block;
+            text-decoration: none;
+            color: #000000;
+            background: #ffffff;
+        }
+        .thread-item:hover {
+            background: #f7f7f7;
+        }
+        .thread-item.active {
+            background: #eef2ff;
+            border-left: 4px solid var(--nu-blue);
+        }
+        .chat-container {
+            border: var(--dp-border-rule) solid var(--dp-color-ink);
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: var(--dp-border-rule) solid var(--dp-color-ink);
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-history {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .chat-bubble {
+            max-width: 80%;
+            padding: 14px 18px;
+            border: 1px solid #000000;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .bubble-user {
+            align-self: flex-start;
+            background: #ffffff;
+            border-left: 4px solid #000000;
+        }
+        .bubble-admin {
+            align-self: flex-end;
+            background: #f4f6ff;
+            border-right: 4px solid var(--nu-blue);
+        }
+        .bubble-meta {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .chat-input-area {
+            padding: 16px;
+            border-top: var(--dp-border-rule) solid var(--dp-color-ink);
+            background: #fafafa;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <div class="grid-12">
+        <!-- 3-COLUMN INDEX RAIL (THREAD LIST) -->
+        <aside class="index-rail" style="padding: 24px 16px;">
+            <span class="index-num" th:text="${isAdminView ? 'INDEX 05 / INBOX' : 'INDEX 05 / MESSAGES'}">INDEX 05</span>
+            <h1 class="index-title" style="font-size: 20px;" th:text="${isAdminView ? 'STUDENT INQUIRIES' : 'ADMIN CHATS'}">
+                CONVERSATIONS
+            </h1>
+            <p class="index-desc" style="font-size: 12px;">
+                Direct two-way channel between National University students and the Lost &amp; Found Office.
+            </p>
+
+            <hr class="rule-2px" style="margin: 16px 0;">
+
+            <!-- START NEW INQUIRY BUTTON (FOR STUDENT) -->
+            <div th:if="${!isAdminView}" style="margin-bottom: 16px;">
+                <button type="button" onclick="document.getElementById('newInquiryBox').style.display='block'" 
+                        class="swiss-btn swiss-btn-primary swiss-btn-sm" style="width: 100%;">
+                    + New Inquiry to Admin
+                </button>
+            </div>
+
+            <!-- MODAL / EXPANDABLE FOR NEW INQUIRY -->
+            <div id="newInquiryBox" style="display: none; background: #fffbe6; border: 1px solid #d4a017; padding: 12px; margin-bottom: 16px;">
+                <form th:action="@{/messages/start}" method="post">
+                    <label class="swiss-label">Inquiry Subject</label>
+                    <input type="text" name="subject" class="swiss-input" placeholder="e.g. Question about lost ID" required style="margin-bottom: 8px;">
+                    <label class="swiss-label">Message</label>
+                    <textarea name="messageText" class="swiss-textarea" rows="2" placeholder="Write message..." required style="margin-bottom: 8px;"></textarea>
+                    <div style="display: flex; gap: 4px;">
+                        <button type="submit" class="swiss-btn swiss-btn-gold swiss-btn-sm" style="flex: 1;">Send</button>
+                        <button type="button" onclick="document.getElementById('newInquiryBox').style.display='none'" class="swiss-btn swiss-btn-outline swiss-btn-sm">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #777; margin-bottom: 8px;">
+                ACTIVE THREADS (<span th:text="${conversations.size()}">0</span>)
+            </div>
+
+            <div th:if="${#lists.isEmpty(conversations)}" style="font-size: 13px; color: #777; padding: 12px; background: #fff;">
+                No message threads found.
+            </div>
+
+            <div style="border: 1px solid #ccc; max-height: 480px; overflow-y: auto;">
+                <a th:each="c : ${conversations}" 
+                   th:href="${isAdminView ? '/admin/messages?id=' + c.conversationId : '/messages?id=' + c.conversationId}" 
+                   class="thread-item" 
+                   th:classappend="${activeConversation != null and activeConversation.conversationId == c.conversationId ? 'active' : ''}">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+                        <strong style="font-size: 13px; text-transform: uppercase;" 
+                                th:text="${isAdminView ? c.user.fullName : (c.item != null ? c.item.itemName : c.subject)}">
+                            Participant
+                        </strong>
+                        <span th:if="${c.item != null}" class="badge bg-secondary" style="font-size: 9px;" th:text="'#' + ${c.item.itemId}">#0</span>
+                    </div>
+
+                    <div style="font-size: 12px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                         th:text="${c.lastMessage != null ? c.lastMessage : 'New conversation opened.'}">
+                        Snippet
+                    </div>
+                    <div style="font-size: 10px; color: #999; margin-top: 4px;" th:text="${#temporals.format(c.updatedAt, 'MMM dd, HH:mm')}">
+                        Time
+                    </div>
+                </a>
+            </div>
+        </aside>
+
+        <!-- 9-COLUMN MAIN CONTENT MATRIX (CHAT PANE) -->
+        <div class="content-matrix" style="padding: 24px;">
+            <div th:if="${alertError}" class="swiss-alert swiss-alert-danger">
+                <span th:text="${alertError}">Error sending message</span>
+            </div>
+
+            <!-- IF NO THREAD SELECTED -->
+            <div th:if="${activeConversation == null}" class="swiss-alert swiss-alert-info">
+                <div>
+                    <strong>Select or start a conversation thread.</strong>
+                    <p style="margin-top: 4px; font-size: 13px;">Click on a conversation in the left index rail to read messages and reply.</p>
+                </div>
+            </div>
+
+            <!-- CHAT INTERFACE -->
+            <div class="chat-container" th:if="${activeConversation != null}">
+                <!-- CHAT HEADER -->
+                <div class="chat-header">
+                    <div>
+                        <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: var(--nu-blue); text-transform: uppercase;">
+                            <span th:text="${isAdminView ? 'CONVERSATION WITH STUDENT: ' + activeConversation.user.fullName : 'CONVERSATION WITH: NU LSF OFFICE'}">
+                                Chat
+                            </span>
+                        </div>
+                        <h2 style="font-size: 18px; font-weight: 800; text-transform: uppercase; margin-top: 2px;" 
+                            th:text="${activeConversation.subject}">
+                            Subject
+                        </h2>
+                    </div>
+                    <div th:if="${activeConversation.item != null}">
+                        <a th:href="@{'/items/' + ${activeConversation.item.itemId}}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+                            Inspect Related Item #<span th:text="${activeConversation.item.itemId}"></span> &rarr;
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CHAT MESSAGES STREAM -->
+                <div class="chat-history" id="chatStream">
+                    <div th:if="${#lists.isEmpty(messages)}" style="text-align: center; color: #888; margin: auto;">
+                        No messages in this thread yet. Send a message below to start chatting!
+                    </div>
+
+                    <div th:each="m : ${messages}" 
+                         class="chat-bubble" 
+                         th:classappend="${m.senderRole == 'ADMIN' ? 'bubble-admin' : 'bubble-user'}">
+                        
+                        <div class="bubble-meta">
+                            <span style="color: var(--nu-blue);" th:text="${m.sender.fullName} + ' (' + ${m.senderRole} + ')'">Sender</span>
+                            <span style="color: #888;" th:text="${#temporals.format(m.sentAt, 'MMM dd, HH:mm')}">Date</span>
+                        </div>
+                        <div style="white-space: pre-wrap;" th:text="${m.messageText}">
+                            Message content here.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CHAT INPUT AREA -->
+                <div class="chat-input-area">
+                    <form th:action="${isAdminView ? '/admin/messages/send' : '/messages/send'}" method="post">
+                        <input type="hidden" name="conversationId" th:value="${activeConversation.conversationId}">
+                        <div style="display: flex; gap: 12px;">
+                            <input type="text" name="messageText" class="swiss-input" 
+                                   placeholder="Type your message here..." required autocomplete="off" style="flex: 1;">
+                            <button type="submit" class="swiss-btn swiss-btn-primary">
+                                Send &rarr;
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+<script>
+    // Scroll chat stream to bottom on load
+    window.addEventListener('DOMContentLoaded', function() {
+        var stream = document.getElementById('chatStream');
+        if (stream) {
+            stream.scrollTop = stream.scrollHeight;
+        }
+    });
+</script>
+
+</body>
+</html>

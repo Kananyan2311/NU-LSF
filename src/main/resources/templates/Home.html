@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>NU-LSF &bull; National University Lost &amp; Found</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <!-- HERO SECTION: 12-COLUMN DESKTOP GRID -->
+    <section class="grid-12" style="background-color: #ffffff;">
+        <div class="content-matrix" style="grid-column: span 9; border-right: var(--dp-border-rule) solid var(--dp-color-ink); padding: 56px 40px;">
+            <span class="signal-badge signal-gold" style="margin-bottom: 16px;">
+                OFFICIAL UNIVERSITY REPOSITORY
+            </span>
+            <h1 class="display-header">
+                RECONNECTING <span class="highlight">BULLDOGS</span> WITH WHAT MATTERS.
+            </h1>
+            <p class="sub-lead">
+                The centralized Lost &amp; Found information grid of National University Philippines. 
+                Report missing belongings, turn in discovered valuables to campus security, and verify ownership through high-integrity claim verification passes.
+            </p>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                <a th:href="@{/catalog}" class="swiss-btn swiss-btn-primary swiss-btn-lg">
+                    Browse All Catalog &rarr;
+                </a>
+                <a th:href="@{/report(type='LOST')}" class="swiss-btn swiss-btn-danger swiss-btn-lg">
+                    Report Missing Item
+                </a>
+                <a th:href="@{/report(type='FOUND')}" class="swiss-btn swiss-btn-gold swiss-btn-lg">
+                    Turn In Found Item
+                </a>
+            </div>
+        </div>
+
+        <aside class="index-rail" style="grid-column: span 3; background: #fafafa; padding: 48px 24px;">
+            <span class="index-num">SYSTEM DISCLOSURE</span>
+            <h2 style="font-size: 18px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px;">
+                CENTRAL OFFICE
+            </h2>
+            <div style="font-size: 13px; line-height: 1.6; color: #444;">
+                <p><strong>Location:</strong> Ground Floor, Administration Hall, Student Safety &amp; Security Desk</p>
+                <p style="margin-top: 8px;"><strong>Intake Hours:</strong> Monday &ndash; Saturday, 08:00 &ndash; 18:00</p>
+                <p style="margin-top: 8px;"><strong>Direct Hotline:</strong> (02) 8712-1900 local 204</p>
+            </div>
+            <hr class="rule-2px" style="margin: 20px 0;">
+            <a th:href="@{/messages}" class="swiss-btn swiss-btn-outline" style="width: 100%;">
+                Inquire With Office &rarr;
+            </a>
+        </aside>
+    </section>
+
+    <!-- METRICS RULED BAR -->
+    <section class="stats-bar">
+        <div class="stat-cell">
+            <div class="stat-num" th:text="${stats.totalItems}">0</div>
+            <div class="stat-label">Total Registered Items</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" th:text="${stats.pendingLost}">0</div>
+            <div class="stat-label">Currently Reported Lost</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" th:text="${stats.available}">0</div>
+            <div class="stat-label">Safely Stored at Office</div>
+        </div>
+        <div class="stat-cell">
+            <div class="stat-num" th:text="${stats.claimed}">0</div>
+            <div class="stat-label">Successfully Returned</div>
+        </div>
+    </section>
+
+    <!-- SECTION: RECENTLY REPORTED LOST (3-COLUMN RAIL + 9-COLUMN CARDS) -->
+    <section class="grid-12">
+        <aside class="index-rail">
+            <span class="index-num">INDEX 02 / MISSING</span>
+            <h2 class="index-title">RECENTLY REPORTED LOST</h2>
+            <p class="index-desc">
+                Belongings reported misplaced by students or faculty on campus. If you discovered any of these items, please surrender them to the LSF Office immediately.
+            </p>
+            <div style="margin-top: 24px;">
+                <a th:href="@{/catalog(status='PENDING_CLAIM')}" class="swiss-btn swiss-btn-outline swiss-btn-sm" style="width: 100%;">
+                    View All Lost Items &rarr;
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-matrix">
+            <div th:if="${#lists.isEmpty(lostItems)}" class="swiss-alert swiss-alert-info">
+                No active missing item reports logged right now.
+            </div>
+            <div class="ruled-matrix" th:if="${!#lists.isEmpty(lostItems)}">
+                <div class="ruled-cell" th:each="item : ${lostItems}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="signal-badge signal-lost">LOST</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #777;" th:text="${item.category}">CATEGORY</span>
+                    </div>
+
+                    <div class="cell-img-wrapper">
+                        <img th:if="${item.imagePath != null}" th:src="${item.imagePath}" alt="Item image">
+                        <span th:if="${item.imagePath == null}" style="font-size: 12px; font-weight: 700; color: #999;">NO PHOTO SUBMITTED</span>
+                    </div>
+
+                    <a th:href="@{'/items/' + ${item.itemId}}" class="cell-title" th:text="${item.itemName}">Item Name</a>
+                    <div class="cell-meta">
+                        <div><strong>Location:</strong> <span th:text="${item.location}">Campus Area</span></div>
+                        <div><strong>Reported:</strong> <span th:text="${item.dateReported}">Date</span></div>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 12px;">
+                        <a th:href="@{'/items/' + ${item.itemId}}" class="swiss-btn swiss-btn-dark swiss-btn-sm" style="width: 100%;">
+                            Inspect Item Details &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: FOUND & AVAILABLE AT OFFICE -->
+    <section class="grid-12" style="background-color: #fafafa;">
+        <aside class="index-rail" style="background-color: #f0f0f0;">
+            <span class="index-num">INDEX 03 / DISCOVERED</span>
+            <h2 class="index-title">FOUND &bull; AT LSF OFFICE</h2>
+            <p class="index-desc">
+                Items safely received and cataloged at the university desk. If one of these items belongs to you, file a claim with identifying proof.
+            </p>
+            <div style="margin-top: 24px;">
+                <a th:href="@{/catalog(status='AVAILABLE')}" class="swiss-btn swiss-btn-outline swiss-btn-sm" style="width: 100%;">
+                    View All Available &rarr;
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-matrix" style="background-color: #fafafa;">
+            <div th:if="${#lists.isEmpty(foundItems)}" class="swiss-alert swiss-alert-info">
+                No items currently awaiting claim at the office.
+            </div>
+            <div class="ruled-matrix" th:if="${!#lists.isEmpty(foundItems)}">
+                <div class="ruled-cell" th:each="item : ${foundItems}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="signal-badge" 
+                              th:classappend="${item.status == 'AVAILABLE' ? 'signal-available' : 'signal-pending'}"
+                              th:text="${item.status == 'AVAILABLE' ? 'AT OFFICE' : 'SURRENDER PENDING'}">STATUS</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #777;" th:text="${item.category}">CATEGORY</span>
+                    </div>
+
+                    <div class="cell-img-wrapper">
+                        <img th:if="${item.imagePath != null}" th:src="${item.imagePath}" alt="Item image">
+                        <span th:if="${item.imagePath == null}" style="font-size: 12px; font-weight: 700; color: #999;">NO PHOTO SUBMITTED</span>
+                    </div>
+
+                    <a th:href="@{'/items/' + ${item.itemId}}" class="cell-title" th:text="${item.itemName}">Item Name</a>
+                    <div class="cell-meta">
+                        <div><strong>Location Found:</strong> <span th:text="${item.location}">Campus Area</span></div>
+                        <div><strong>Locker Bin:</strong> <span th:text="${item.storageLocation != null ? item.storageLocation : 'LSF Intake Desk'}">Intake Desk</span></div>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 12px;">
+                        <a th:href="@{'/items/' + ${item.itemId}}" class="swiss-btn swiss-btn-primary swiss-btn-sm" style="width: 100%;">
+                            Inspect &amp; Request Claim &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: 3-STEP PROCEDURAL MATRIX -->
+    <section class="grid-12">
+        <aside class="index-rail">
+            <span class="index-num">INDEX 04 / PROTOCOL</span>
+            <h2 class="index-title">RETRIEVAL STANDARD</h2>
+            <p class="index-desc">
+                Follow the 3-step security verification workflow to reclaim lost personal property at National University.
+            </p>
+        </aside>
+
+        <div class="content-matrix" style="padding: 0;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); border-left: var(--dp-border-rule) solid var(--dp-color-ink);">
+                <div style="padding: 32px; border-right: var(--dp-border-rule) solid var(--dp-color-ink);">
+                    <div style="font-size: 32px; font-weight: 800; color: var(--nu-blue); margin-bottom: 8px;">01</div>
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">SUBMIT CLAIM</h3>
+                    <p style="font-size: 13px; color: #555; line-height: 1.5;">
+                        Provide specific identifying markers, serial numbers, password patterns, or purchase receipts via the secure web claim form.
+                    </p>
+                </div>
+                <div style="padding: 32px; border-right: var(--dp-border-rule) solid var(--dp-color-ink);">
+                    <div style="font-size: 32px; font-weight: 800; color: var(--nu-blue); margin-bottom: 8px;">02</div>
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">ADMIN AUDIT</h3>
+                    <p style="font-size: 13px; color: #555; line-height: 1.5;">
+                        LSF administrators verify your description against the physically inspected item and generate a unique Pickup Verification Pass.
+                    </p>
+                </div>
+                <div style="padding: 32px;">
+                    <div style="font-size: 32px; font-weight: 800; color: var(--nu-blue); margin-bottom: 8px;">03</div>
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">OFFICE PICKUP</h3>
+                    <p style="font-size: 13px; color: #555; line-height: 1.5;">
+                        Present your official Verification Pass and valid student/employee ID at the campus security desk to complete property release.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+</body>
+</html>

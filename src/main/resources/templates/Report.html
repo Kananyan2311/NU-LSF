@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>File Property Report &bull; NU Lost &amp; Found</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .choice-matrix {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            border-top: var(--dp-border-rule) solid var(--dp-color-ink);
+            border-left: var(--dp-border-rule) solid var(--dp-color-ink);
+            margin-bottom: 24px;
+        }
+        .choice-cell {
+            border-right: var(--dp-border-rule) solid var(--dp-color-ink);
+            border-bottom: var(--dp-border-rule) solid var(--dp-color-ink);
+            padding: 36px;
+            background: #ffffff;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--dp-color-ink);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .choice-cell:hover {
+            background: #fafafa;
+        }
+        .choice-cell.selected {
+            background: #f0f3ff;
+            border-color: var(--nu-blue);
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <div class="grid-12">
+        <!-- 3-COLUMN INDEX RAIL -->
+        <aside class="index-rail">
+            <span class="index-num">INDEX 04 / DISCLOSURE</span>
+            <h1 class="index-title">LOG PROPERTY REPORT</h1>
+            <p class="index-desc">
+                Log a missing belonging or surrender a discovered item to the National University Philippines custody network.
+            </p>
+
+            <hr class="rule-2px" style="margin: 20px 0;">
+
+            <div style="font-size: 13px; line-height: 1.6; color: #444;">
+                <p><strong>REPORTING GUIDELINES:</strong></p>
+                <ul style="padding-left: 18px; margin-top: 8px;">
+                    <li>Provide specific details (serial numbers, case design, stickers).</li>
+                    <li>Avoid submitting duplicate reports.</li>
+                    <li>Found items must be physically surrendered to the LSF Office within 24 hours.</li>
+                </ul>
+            </div>
+
+            <hr class="rule-2px" style="margin: 20px 0;">
+
+            <a th:href="@{/catalog}" class="swiss-btn swiss-btn-outline swiss-btn-sm" style="width: 100%;">
+                &larr; Back to Catalog
+            </a>
+        </aside>
+
+        <!-- 9-COLUMN MAIN CONTENT MATRIX -->
+        <div class="content-matrix">
+            <!-- STEP 1: CHOOSE REPORT TYPE -->
+            <div th:if="${reportType == null}">
+                <span class="signal-badge signal-gold" style="margin-bottom: 12px;">STEP 01 OF 02</span>
+                <h2 style="font-size: 28px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                    Select Report Classification
+                </h2>
+                <p style="font-size: 14px; color: #555; margin-bottom: 24px;">
+                    Are you reporting an item you lost, or an item you discovered on campus?
+                </p>
+
+                <div class="choice-matrix">
+                    <a th:href="@{/report(type='LOST')}" class="choice-cell">
+                        <div>
+                            <span class="signal-badge signal-lost" style="margin-bottom: 16px;">MISPLACED BELONGING</span>
+                            <div style="font-size: 40px; margin-bottom: 8px;">🔍</div>
+                            <h3 style="font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                                I Lost Something
+                            </h3>
+                            <p style="font-size: 13px; color: #666; line-height: 1.5;">
+                                Log an item you cannot find. Our automated engine will constantly scan newly turned-in items and alert you of matches.
+                            </p>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <span class="swiss-btn swiss-btn-danger" style="width: 100%;">
+                                File Missing Item Report &rarr;
+                            </span>
+                        </div>
+                    </a>
+
+                    <a th:href="@{/report(type='FOUND')}" class="choice-cell">
+                        <div>
+                            <span class="signal-badge signal-gold" style="margin-bottom: 16px;">DISCOVERED ON CAMPUS</span>
+                            <div style="font-size: 40px; margin-bottom: 8px;">🎁</div>
+                            <h3 style="font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+                                I Found Something
+                            </h3>
+                            <p style="font-size: 13px; color: #666; line-height: 1.5;">
+                                Log an item you discovered on university premises before surrendering it to the LSF Office or campus guard station.
+                            </p>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <span class="swiss-btn swiss-btn-primary" style="width: 100%;">
+                                Register Found Item &rarr;
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- STEP 2: FILL REPORT FORM -->
+            <div th:if="${reportType != null}">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: var(--dp-border-rule) solid var(--dp-color-ink); padding-bottom: 12px;">
+                    <div>
+                        <span class="signal-badge" 
+                              th:classappend="${reportType == 'LOST' ? 'signal-lost' : 'signal-available'}" 
+                              th:text="'FILING ' + ${reportType} + ' REPORT'">
+                            REPORT
+                        </span>
+                        <h2 style="font-size: 26px; font-weight: 800; text-transform: uppercase; margin-top: 6px;">
+                            Property Registration Details
+                        </h2>
+                    </div>
+                    <a th:href="@{/report}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+                        Change Classification
+                    </a>
+                </div>
+
+                <form th:action="@{/report/submit}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="status" th:value="${reportType}">
+
+                    <div style="margin-bottom: 18px;">
+                        <label class="swiss-label">Item Name / Title *</label>
+                        <input type="text" name="itemName" class="swiss-input" 
+                               placeholder="e.g. Casio Scientific Calculator fx-991EX, Blue Wallet with Student ID" required>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+                        <div>
+                            <label class="swiss-label">Classification Category *</label>
+                            <select name="category" class="swiss-select" required>
+                                <option value="" disabled selected>Select category...</option>
+                                <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="swiss-label">Color / Finish</label>
+                            <input type="text" name="color" class="swiss-input" placeholder="e.g. Matte Black, Gold &amp; Navy Blue">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label class="swiss-label">Comprehensive Description *</label>
+                        <textarea name="description" class="swiss-textarea" rows="4" 
+                                  placeholder="Describe distinctive identifiers, condition, brands, scratches, stickers, or notable characteristics..." required></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
+                        <div>
+                            <label class="swiss-label" th:text="${reportType == 'LOST' ? 'Date Lost *' : 'Date Discovered *'}">Date</label>
+                            <input type="date" name="specificDate" class="swiss-input" required>
+                        </div>
+                        <div>
+                            <label class="swiss-label" th:text="${reportType == 'LOST' ? 'Estimated Location Lost *' : 'Specific Campus Location Found *'}">Location</label>
+                            <input type="text" name="specificLocation" class="swiss-input" 
+                                   placeholder="e.g. Main Library 3rd Floor Carrel, Gym Bleachers, Room 402" required>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;" th:if="${reportType == 'FOUND'}">
+                        <label class="swiss-label">Physical Handover Point (Optional)</label>
+                        <input type="text" name="turnedInTo" class="swiss-input" 
+                               placeholder="e.g. Main Gate Guard Station, Student Affairs 2nd Floor">
+                    </div>
+
+                    <div style="margin-bottom: 24px; background: #fafafa; border: 1px solid #ddd; padding: 18px;">
+                        <label class="swiss-label">Photograph Attachment (Optional, Max 5MB)</label>
+                        <input type="file" name="image" class="swiss-input" accept="image/*" style="background: #ffffff;">
+                        <small style="color: #666; font-size: 11px; margin-top: 4px; display: block;">
+                            Clear photographs expedite ownership verification and matching accuracy.
+                        </small>
+                    </div>
+
+                    <button type="submit" class="swiss-btn swiss-btn-primary swiss-btn-lg" style="width: 100%;">
+                        Submit Official Property Report &rarr;
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+</body>
+</html>

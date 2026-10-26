@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Administrator Dashboard &bull; NU Lost &amp; Found</title>
+    <link rel="stylesheet" th:href="@{/css/swiss-nu.css}">
+    <style>
+        .admin-tab-bar {
+            display: flex;
+            border-bottom: var(--dp-border-rule) solid var(--dp-color-ink);
+            margin-bottom: 24px;
+            overflow-x: auto;
+        }
+        .admin-tab-btn {
+            padding: 12px 20px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-decoration: none;
+            color: #444;
+            border-right: 1px solid #ccc;
+            background: #f4f4f4;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .admin-tab-btn:hover {
+            background: #e9e9e9;
+        }
+        .admin-tab-btn.active {
+            background: #000000;
+            color: #ffffff;
+        }
+        .table-matrix {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            border: var(--dp-border-rule) solid var(--dp-color-ink);
+            margin-bottom: 24px;
+        }
+        .table-matrix th {
+            background: #000000;
+            color: #ffffff;
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            border-right: 1px solid #333;
+        }
+        .table-matrix td {
+            padding: 14px;
+            border-bottom: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+            vertical-align: top;
+        }
+        .table-matrix tr:hover {
+            background: #fafafa;
+        }
+        .action-card {
+            border: var(--dp-border-rule) solid var(--dp-color-ink);
+            padding: 20px;
+            background: #ffffff;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: navbar}"></div>
+
+<main>
+    <div class="grid-12">
+        <!-- 3-COLUMN INDEX RAIL (ADMIN NAVIGATION) -->
+        <aside class="index-rail">
+            <span class="index-num">INDEX 01 / ADMIN SUITE</span>
+            <h1 class="index-title">OPERATIONS PORTAL</h1>
+            
+            <div style="background: var(--nu-blue); color: #fff; padding: 12px; margin-bottom: 16px;">
+                <div style="font-size: 11px; color: var(--nu-gold); font-weight: 800; letter-spacing: 0.1em;">AUTHORIZED OFFICER</div>
+                <div style="font-weight: 800; font-size: 15px;" th:text="${currentUser.fullName}">Admin Name</div>
+                <div style="font-size: 12px; color: #ccc;" th:text="${currentUser.email}">admin@national-u.edu.ph</div>
+            </div>
+
+            <p class="index-desc">
+                Centralized property intake verification, proof inspection, ownership clearance, and campus inventory audit.
+            </p>
+
+            <hr class="rule-2px" style="margin: 20px 0;">
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <a th:href="@{/admin/dashboard(tab='claims')}" 
+                   class="swiss-btn swiss-btn-sm" 
+                   th:classappend="${activeTab == 'claims' ? 'swiss-btn-dark' : 'swiss-btn-outline'}">
+                    01. Claims Review
+                    <span th:if="${pendingClaimsCount > 0}" class="badge bg-danger" th:text="${pendingClaimsCount}">0</span>
+                </a>
+                <a th:href="@{/admin/dashboard(tab='intake')}" 
+                   class="swiss-btn swiss-btn-sm" 
+                   th:classappend="${activeTab == 'intake' ? 'swiss-btn-dark' : 'swiss-btn-outline'}">
+                    02. Pending Intake Check-in
+                    <span th:if="${pendingIntake.size() > 0}" class="badge bg-warning text-dark" th:text="${pendingIntake.size()}">0</span>
+                </a>
+                <a th:href="@{/admin/dashboard(tab='inventory')}" 
+                   class="swiss-btn swiss-btn-sm" 
+                   th:classappend="${activeTab == 'inventory' ? 'swiss-btn-dark' : 'swiss-btn-outline'}">
+                    03. Inventory Catalog
+                </a>
+                <a th:href="@{/admin/dashboard(tab='audit')}" 
+                   class="swiss-btn swiss-btn-sm" 
+                   th:classappend="${activeTab == 'audit' ? 'swiss-btn-dark' : 'swiss-btn-outline'}">
+                    04. Security Audit Log
+                </a>
+                <a th:href="@{/admin/messages}" class="swiss-btn swiss-btn-gold swiss-btn-sm">
+                    05. Message Center
+                </a>
+            </div>
+
+            <hr class="rule-2px" style="margin: 24px 0;">
+
+            <div>
+                <span class="swiss-label">OFFICIAL EXPORT REPORTS</span>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                    <a th:href="@{/admin/export/items.csv}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+                        📥 Download Items CSV
+                    </a>
+                    <a th:href="@{/admin/export/claims.csv}" class="swiss-btn swiss-btn-outline swiss-btn-sm">
+                        📥 Download Claims CSV
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 9-COLUMN MAIN CONTENT MATRIX -->
+        <div class="content-matrix">
+            <div th:if="${alertSuccess}" class="swiss-alert swiss-alert-success">
+                <span th:text="${alertSuccess}">Success action</span>
+            </div>
+            <div th:if="${alertError}" class="swiss-alert swiss-alert-danger">
+                <span th:text="${alertError}">Error action</span>
+            </div>
+
+            <!-- TAB 1: CLAIMS MANAGEMENT -->
+            <div th:if="${activeTab == 'claims'}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: var(--dp-border-rule) solid var(--dp-color-ink); padding-bottom: 12px;">
+                    <div>
+                        <span class="signal-badge signal-lost">CLAIMS MANAGEMENT</span>
+                        <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-top: 4px;">
+                            Ownership Verification Requests
+                        </h2>
+                    </div>
+                    <span style="font-size: 13px; color: #666;" th:text="${pendingClaims.size()} + ' pending review'">0 pending</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(pendingClaims)}" class="swiss-alert swiss-alert-info">
+                    No claims currently awaiting verification. All caught up!
+                </div>
+
+                <div th:each="c : ${pendingClaims}" class="action-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <span class="signal-badge signal-pending">CLAIM PENDING</span>
+                            <h3 style="font-size: 20px; font-weight: 800; text-transform: uppercase; margin-top: 6px;" 
+                                th:text="${c.item.itemName}">
+                                Item Name
+                            </h3>
+                            <div style="font-size: 12px; color: #666;">
+                                Item ID: <strong th:text="'#' + ${c.item.itemId}">#0</strong> &bull; 
+                                Category: <strong th:text="${c.item.category}">Cat</strong> &bull; 
+                                Storage Location: <strong th:text="${c.item.storageLocation != null ? c.item.storageLocation : 'LSF Intake Desk'}">Desk</strong>
+                            </div>
+                        </div>
+                        <div style="text-align: right; font-size: 12px; color: #555;">
+                            Filed on: <strong th:text="${c.claimDate}">Date</strong>
+                        </div>
+                    </div>
+
+                    <!-- CLAIMANT & PROOF GRID -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; background: #fafafa; border: 1px solid #ddd; padding: 16px; margin-bottom: 16px; font-size: 13px;">
+                        <div>
+                            <strong style="text-transform: uppercase; color: var(--nu-blue);">Claimant Information:</strong>
+                            <div style="margin-top: 4px;"><strong>Name:</strong> <span th:text="${c.claimer.fullName}">Name</span></div>
+                            <div><strong>Email:</strong> <span th:text="${c.claimer.email}">Email</span></div>
+                            <div><strong>Student/Employee ID:</strong> <span th:text="${c.claimer.studentId != null and !c.claimer.studentId.empty ? c.claimer.studentId : 'N/A'}">ID</span></div>
+                            <div><strong>Contact:</strong> <span th:text="${c.claimer.contactNumber}">Phone</span></div>
+                        </div>
+                        <div>
+                            <strong style="text-transform: uppercase; color: var(--dp-color-accent);">Submitted Proof Description:</strong>
+                            <p style="margin-top: 4px; line-height: 1.5; color: #222;" th:text="${c.proofDescription}">
+                                Proof details submitted by user.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- APPROVAL & REJECTION ACTIONS (PURE SERVER-SIDE JAVA FORMS) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <!-- APPROVE FORM -->
+                        <form th:action="@{'/admin/claims/' + ${c.claimId} + '/approve'}" method="post" 
+                              style="background: #ebfaeb; border: 1px solid #0b7816; padding: 14px;">
+                            <label class="swiss-label" style="color: #0b7816;">Approval Clearance Remarks (Optional)</label>
+                            <input type="text" name="remarks" class="swiss-input" 
+                                   placeholder="e.g. Verified via lock screen pattern / serial number matched." style="margin-bottom: 8px;">
+                            <button type="submit" class="swiss-btn swiss-btn-primary swiss-btn-sm" style="width: 100%;">
+                                ✓ Approve Claim &amp; Issue Pickup Pass
+                            </button>
+                        </form>
+
+                        <!-- REJECT FORM -->
+                        <form th:action="@{'/admin/claims/' + ${c.claimId} + '/reject'}" method="post" 
+                              style="background: #fff0f0; border: 1px solid var(--dp-color-accent); padding: 14px;">
+                            <label class="swiss-label" style="color: var(--dp-color-accent);">Rejection Feedback Reason *</label>
+                            <input type="text" name="remarks" class="swiss-input" 
+                                   placeholder="e.g. Serial number does not match item on hand." required style="margin-bottom: 8px;">
+                            <button type="submit" class="swiss-btn swiss-btn-danger swiss-btn-sm" style="width: 100%;">
+                                ✕ Reject Claim With Feedback
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- PREVIOUS CLAIMS HISTORY -->
+                <div style="margin-top: 36px;">
+                    <h3 style="font-size: 16px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px;">
+                        Processed Claims History
+                    </h3>
+                    <table class="table-matrix">
+                        <thead>
+                            <tr>
+                                <th>Claim ID</th>
+                                <th>Item</th>
+                                <th>Claimant</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Pass Code</th>
+                                <th>Admin Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="ac : ${allClaims}">
+                                <td th:text="'#' + ${ac.claimId}">#0</td>
+                                <td th:text="${ac.item.itemName}">Item</td>
+                                <td th:text="${ac.claimer.fullName}">Claimant</td>
+                                <td th:text="${ac.claimDate}">Date</td>
+                                <td>
+                                    <span class="signal-badge" 
+                                          th:classappend="${ac.claimStatus == 'APPROVED' ? 'signal-available' : (ac.claimStatus == 'PENDING' ? 'signal-pending' : 'signal-lost')}"
+                                          th:text="${ac.claimStatus}">
+                                        STATUS
+                                    </span>
+                                </td>
+                                <td><code th:text="${ac.verificationCode != null ? ac.verificationCode : '-'}"></code></td>
+                                <td th:text="${ac.adminRemarks}">Remarks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: PENDING INTAKE & SURRENDER CHECK-IN -->
+            <div th:if="${activeTab == 'intake'}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: var(--dp-border-rule) solid var(--dp-color-ink); padding-bottom: 12px;">
+                    <div>
+                        <span class="signal-badge signal-gold">PROPERTY INTAKE DESK</span>
+                        <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-top: 4px;">
+                            Items Awaiting Office Surrender Check-In
+                        </h2>
+                    </div>
+                    <span style="font-size: 13px; color: #666;" th:text="${pendingIntake.size()} + ' item(s) pending check-in'">0</span>
+                </div>
+
+                <div th:if="${#lists.isEmpty(pendingIntake)}" class="swiss-alert swiss-alert-info">
+                    No items currently awaiting intake reception.
+                </div>
+
+                <div th:each="pi : ${pendingIntake}" class="action-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div>
+                            <span class="signal-badge" 
+                                  th:classappend="${pi.status == 'PENDING_SURRENDER' ? 'signal-gold' : 'signal-lost'}"
+                                  th:text="${pi.status == 'PENDING_SURRENDER' ? 'FOUND &bull; NEEDS SURRENDER' : 'LOST REPORT &bull; REVIEW'}">
+                                STATUS
+                            </span>
+                            <h3 style="font-size: 20px; font-weight: 800; text-transform: uppercase; margin-top: 6px;" 
+                                th:text="${pi.itemName}">
+                                Item Name
+                            </h3>
+                            <div style="font-size: 12px; color: #666;">
+                                Reported by: <strong th:text="${pi.postedBy}">Name</strong> &bull; 
+                                Location: <strong th:text="${pi.location}">Loc</strong> &bull; 
+                                Date: <strong th:text="${pi.dateReported}">Date</strong>
+                            </div>
+                        </div>
+                        <div style="font-size: 12px; color: #555;">
+                            Category: <strong th:text="${pi.category}">Cat</strong>
+                        </div>
+                    </div>
+
+                    <div style="background: #fafafa; border: 1px solid #ddd; padding: 12px; margin-bottom: 16px; font-size: 13px;">
+                        <strong>Description:</strong> <span th:text="${pi.description}">Desc</span>
+                    </div>
+
+                    <!-- INTAKE RECEPTION FORM -->
+                    <form th:action="@{'/admin/intake/' + ${pi.itemId} + '/receive'}" method="post" 
+                          style="background: #eef2ff; border: 1px solid var(--nu-blue); padding: 16px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label class="swiss-label">Assign Physical Storage Locker / Bin *</label>
+                                <input type="text" name="storageLocation" class="swiss-input" 
+                                       placeholder="e.g. Locker A-04, Cabinet 2, Safe Drawer 1" required>
+                            </div>
+                            <div>
+                                <label class="swiss-label">Intake Notes / Verification Remarks</label>
+                                <input type="text" name="notes" class="swiss-input" 
+                                       placeholder="e.g. Handed over by Guard Santos, minor scratches.">
+                            </div>
+                        </div>
+                        <button type="submit" class="swiss-btn swiss-btn-primary swiss-btn-sm">
+                            ✓ Confirm Reception &amp; Make Available in Catalog
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: COMPLETE INVENTORY -->
+            <div th:if="${activeTab == 'inventory'}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: var(--dp-border-rule) solid var(--dp-color-ink); padding-bottom: 12px;">
+                    <div>
+                        <span class="signal-badge signal-dark">SYSTEM INVENTORY</span>
+                        <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-top: 4px;">
+                            Complete Property Catalog Management
+                        </h2>
+                    </div>
+                    <span style="font-size: 13px; color: #666;" th:text="${allItems.size()} + ' total items'">0</span>
+                </div>
+
+                <table class="table-matrix">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Locker / Bin</th>
+                            <th>Quick Status Update</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="it : ${allItems}">
+                            <td th:text="'#' + ${it.itemId}">#0</td>
+                            <td>
+                                <a th:href="@{'/items/' + ${it.itemId}}" style="font-weight: 700; color: var(--dp-color-ink); text-decoration: none;" th:text="${it.itemName}">Name</a>
+                            </td>
+                            <td th:text="${it.category}">Cat</td>
+                            <td>
+                                <span class="signal-badge" 
+                                      th:classappend="${it.status == 'AVAILABLE' ? 'signal-available' : (it.status == 'PENDING_CLAIM' ? 'signal-lost' : (it.status == 'CLAIMED' ? 'signal-claimed' : 'signal-pending'))}"
+                                      th:text="${it.status}">
+                                    STATUS
+                                </span>
+                            </td>
+                            <td th:text="${it.location}">Location</td>
+                            <td th:text="${it.storageLocation != null ? it.storageLocation : '-'}">Storage</td>
+                            <td>
+                                <form th:action="@{'/admin/items/' + ${it.itemId} + '/status'}" method="post" style="display: flex; gap: 4px;">
+                                    <select name="status" class="swiss-select" style="padding: 4px; font-size: 11px;">
+                                        <option value="AVAILABLE" th:selected="${it.status == 'AVAILABLE'}">AVAILABLE</option>
+                                        <option value="PENDING_CLAIM" th:selected="${it.status == 'PENDING_CLAIM'}">PENDING_CLAIM (LOST)</option>
+                                        <option value="PENDING_SURRENDER" th:selected="${it.status == 'PENDING_SURRENDER'}">PENDING_SURRENDER</option>
+                                        <option value="CLAIMED" th:selected="${it.status == 'CLAIMED'}">CLAIMED</option>
+                                    </select>
+                                    <button type="submit" class="swiss-btn swiss-btn-dark swiss-btn-sm" style="padding: 4px 8px;">
+                                        Update
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <form th:action="@{'/admin/items/' + ${it.itemId} + '/delete'}" method="post" 
+                                      onsubmit="return confirm('Permanently remove this item record from database?');">
+                                    <button type="submit" class="swiss-btn swiss-btn-danger swiss-btn-sm" style="padding: 4px 8px;">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TAB 4: AUDIT LOGS -->
+            <div th:if="${activeTab == 'audit'}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: var(--dp-border-rule) solid var(--dp-color-ink); padding-bottom: 12px;">
+                    <div>
+                        <span class="signal-badge signal-dark">AUDIT TRAIL</span>
+                        <h2 style="font-size: 24px; font-weight: 800; text-transform: uppercase; margin-top: 4px;">
+                            System Security &amp; Activity Log
+                        </h2>
+                    </div>
+                    <span style="font-size: 13px; color: #666;">Top 100 recent actions</span>
+                </div>
+
+                <table class="table-matrix">
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Action</th>
+                            <th>Performed By</th>
+                            <th>Target</th>
+                            <th>Details</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="log : ${auditLogs}">
+                            <td th:text="'#' + ${log.logId}">#0</td>
+                            <td>
+                                <span class="signal-badge signal-gold" th:text="${log.action}">ACTION</span>
+                            </td>
+                            <td th:text="${log.performedBy}">user</td>
+                            <td th:text="${log.targetType} + ' #' + ${log.targetId}">TARGET</td>
+                            <td th:text="${log.details}">Details</td>
+                            <td th:text="${log.timestamp}">Time</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/nav :: footer}"></div>
+
+</body>
+</html>
